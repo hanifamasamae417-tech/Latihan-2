@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Pasar Buah Quiz Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Noto+Sans+Thai:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F3D2E;
+    --bg2:#153F30;
+    --sand:#FBF3E4;
+    --mango:#F2A93B;
+    --mango-dark:#B87415;
+    --hibiscus:#D6456C;
+    --hibiscus-dark:#93213C;
+    --leaf:#4C8C4A;
+    --leaf-dark:#2E5C2C;
+    --sky:#2F8FA6;
+    --sky-dark:#1F5F6D;
+    --card:#FFFDF8;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(242,169,59,0.18) 0, transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(214,69,108,0.16) 0, transparent 45%),
+      linear-gradient(160deg, var(--bg) 0%, var(--bg2) 100%);
+    font-family:'Noto Sans Thai', sans-serif;
+    color:var(--sand);
+    display:flex; align-items:center; justify-content:center;
+    padding:24px 14px;
+  }
+  .stage{width:100%; max-width:640px;}
+
+  /* ---------- Start screen ---------- */
+  .screen{display:none;}
+  .screen.active{display:block;}
+  .start-card{
+    text-align:center; padding:10px 6px;
+  }
+  .badge{
+    display:inline-block; font-size:13px; font-weight:700; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--mango); background:rgba(242,169,59,0.14);
+    border:1px solid rgba(242,169,59,0.4); border-radius:99px; padding:5px 16px; margin-bottom:16px;
+  }
+  h1.title{
+    font-family:'Fraunces',serif; font-weight:800; font-size:44px; line-height:1.1;
+    margin:0 0 10px; color:var(--sand);
+  }
+  h1.title em{font-style:italic; color:var(--mango);}
+  .fruits-row{font-size:30px; margin:10px 0 22px; letter-spacing:2px;}
+  .desc{font-size:15px; line-height:1.7; color:#CFE3DA; max-width:440px; margin:0 auto 26px;}
+  .big-btn{
+    font-family:'Noto Sans Thai',sans-serif; font-weight:800; font-size:18px;
+    background:var(--mango); color:#231400; border:none; border-radius:16px;
+    padding:16px 42px; cursor:pointer; box-shadow:0 8px 0 var(--mango-dark);
+    transition:transform .08s ease;
+  }
+  .big-btn:active{transform:translateY(6px); box-shadow:0 2px 0 var(--mango-dark);}
+  .rules{
+    margin:30px auto 0; max-width:440px; text-align:left;
+    background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12);
+    border-radius:14px; padding:16px 20px; font-size:13.5px; line-height:1.9; color:#CFE3DA;
+  }
+  .rules b{color:var(--mango);}
+
+  /* ---------- Game HUD ---------- */
+  .hud{display:flex; align-items:center; gap:12px; margin-bottom:16px;}
+  .hud-box{
+    background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14);
+    border-radius:12px; padding:8px 14px; font-size:13px; font-weight:700;
+    display:flex; align-items:center; gap:6px;
+  }
+  .qcount{font-family:'Fraunces',serif; font-weight:800;}
+  .hearts{letter-spacing:3px; font-size:16px;}
+  .streak{color:var(--mango);}
+  .score-box{margin-left:auto; text-align:right;}
+  .score-box .num{font-family:'Fraunces',serif; font-weight:800; font-size:22px; color:var(--mango);}
+  .score-box .lbl{font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#9FC2B4;}
+
+  .timer-track{
+    height:10px; border-radius:99px; background:rgba(255,255,255,0.1);
+    overflow:hidden; margin-bottom:22px;
+  }
+  .timer-fill{height:100%; width:100%; background:linear-gradient(90deg,var(--leaf),var(--mango)); transition:width .1s linear;}
+  .timer-fill.danger{background:linear-gradient(90deg,var(--hibiscus),#ff7373);}
+
+  .qcard{
+    background:var(--card); color:var(--bg);
+    border-radius:20px; padding:26px 24px; text-align:center;
+    box-shadow:0 14px 0 rgba(0,0,0,0.18);
+    margin-bottom:18px;
+  }
+  .qnum{
+    font-family:'Fraunces',serif; font-weight:700; font-size:12.5px;
+    color:var(--sky-dark); text-transform:uppercase; letter-spacing:.1em; margin-bottom:8px;
+  }
+  .qtext{font-family:'Fraunces',serif; font-weight:700; font-size:23px; line-height:1.35;}
+  .qtext i{font-style:italic; color:var(--mango-dark);}
+
+  .answers{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  @media(max-width:480px){.answers{grid-template-columns:1fr;}}
+  .ans{
+    display:flex; align-items:center; gap:10px;
+    font-family:'Noto Sans Thai',sans-serif; font-weight:700; font-size:15px;
+    color:#fff; border:none; border-radius:14px; padding:16px 16px;
+    cursor:pointer; text-align:left; box-shadow:0 6px 0 rgba(0,0,0,0.22);
+    transition:transform .08s ease;
+  }
+  .ans:active{transform:translateY(4px); box-shadow:0 2px 0 rgba(0,0,0,0.22);}
+  .ans .shape{font-size:18px; min-width:20px;}
+  .ans.a{background:var(--sky);} 
+  .ans.b{background:var(--hibiscus);}
+  .ans.c{background:var(--mango-dark);}
+  .ans.d{background:var(--leaf-dark);}
+  .ans.disabled{pointer-events:none; opacity:.55;}
+  .ans.right-flash{outline:4px solid #fff; box-shadow:0 6px 0 rgba(0,0,0,0.22), 0 0 0 4px rgba(255,255,255,0.5); opacity:1 !important;}
+  .ans.wrong-flash{filter:grayscale(.5); opacity:.55;}
+
+  .feedback-pop{
+    text-align:center; font-weight:800; font-size:19px; margin-top:14px;
+    font-family:'Fraunces',serif; min-height:28px;
+  }
+  .feedback-pop.good{color:var(--mango);}
+  .feedback-pop.bad{color:var(--hibiscus);}
+  .feedback-sub{
+    text-align:center; font-size:13px; color:#CFE3DA; margin-top:2px; min-height:18px;
+  }
+
+  /* ---------- End screen ---------- */
+  .end-card{text-align:center;}
+  .trophy{font-size:64px; margin-bottom:6px;}
+  .rank{
+    font-family:'Fraunces',serif; font-weight:800; font-size:28px; color:var(--mango); margin-bottom:6px;
+  }
+  .final-score{font-size:16px; color:#CFE3DA; margin-bottom:22px;}
+  .final-score b{color:var(--sand); font-family:'Fraunces',serif; font-size:24px;}
+  .stat-row{display:flex; justify-content:center; gap:10px; margin-bottom:24px; flex-wrap:wrap;}
+  .stat{
+    background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14);
+    border-radius:12px; padding:10px 18px; min-width:90px;
+  }
+  .stat .n{font-family:'Fraunces',serif; font-weight:800; font-size:20px; color:var(--mango);}
+  .stat .l{font-size:11px; color:#9FC2B4; text-transform:uppercase; letter-spacing:.06em;}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <!-- START -->
+  <div class="screen active" id="screen-start">
+    <div class="start-card">
+      <div class="badge">Pasar Buah · Quiz Game</div>
+      <h1 class="title">ตะลุยด่าน <em>ผลไม้มลายู</em></h1>
+      <div class="fruits-row">🥭 🍌 🍏 🍉 🍊 🍇 🥥 🍍</div>
+      <p class="desc">ตอบให้เร็ว ได้คะแนนเยอะ! 10 คำถาม ตอบถูกต่อเนื่องจะได้โบนัสสตรีค 🔥 พร้อมหัวใจ 3 ดวง ลุยเลย!</p>
+      <button class="big-btn" onclick="startGame()">▶ เริ่มเกม</button>
+      <div class="rules">
+        <div>⏱ <b>เวลา</b> — แต่ละข้อมี 15 วินาที ยิ่งตอบเร็วยิ่งได้คะแนนเยอะ</div>
+        <div>🔥 <b>สตรีค</b> — ตอบถูกติดกันยิ่งมาก คะแนนโบนัสยิ่งสูง</div>
+        <div>❤️ <b>หัวใจ</b> — ตอบผิดเสียหัวใจ 1 ดวง (มี 3 ดวง)</div>
+        <div>🏆 <b>อันดับ</b> — จบเกมรับตำแหน่งตามคะแนนรวม</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME -->
+  <div class="screen" id="screen-game">
+    <div class="hud">
+      <div class="hud-box">ข้อ <span class="qcount" id="qcount">1</span>/10</div>
+      <div class="hud-box hearts" id="hearts">❤️❤️❤️</div>
+      <div class="hud-box streak" id="streakbox" style="display:none;">🔥 <span id="streakn">0</span></div>
+      <div class="score-box">
+        <div class="num" id="scoretotal">0</div>
+        <div class="lbl">คะแนน</div>
+      </div>
+    </div>
+    <div class="timer-track"><div class="timer-fill" id="timerfill"></div></div>
+
+    <div class="qcard">
+      <div class="qnum" id="qnum-label">คำถามที่ 1</div>
+      <div class="qtext" id="qtext">...</div>
+    </div>
+
+    <div class="answers" id="answers"></div>
+    <div class="feedback-pop" id="feedbackpop"></div>
+    <div class="feedback-sub" id="feedbacksub"></div>
+  </div>
+
+  <!-- END -->
+  <div class="screen" id="screen-end">
+    <div class="end-card">
+      <div class="trophy" id="trophy">🏆</div>
+      <div class="rank" id="rank">—</div>
+      <div class="final-score">คะแนนรวม <b><span id="finalscore">0</span></b> คะแนน</div>
+      <div class="stat-row">
+        <div class="stat"><div class="n" id="correctcount">0/10</div><div class="l">ตอบถูก</div></div>
+        <div class="stat"><div class="n" id="beststreak">0</div><div class="l">สตรีคสูงสุด</div></div>
+        <div class="stat"><div class="n" id="livesleft">3</div><div class="l">หัวใจที่เหลือ</div></div>
+      </div>
+      <button class="big-btn" onclick="startGame()">↻ เล่นอีกครั้ง</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const data = [
+  { q:'"mangga" หมายถึงผลไม้อะไร?', options:["กล้วย","มะม่วง","ส้ม","องุ่น"], correct:1 },
+  { q:'"pisang" หมายถึงผลไม้อะไร?', options:["แอปเปิล","แตงโม","กล้วย","ทุเรียน"], correct:2 },
+  { q:'ข้อใดหมายถึง "แอปเปิล"', options:["epal","oren","betik","anggur"], correct:0 },
+  { q:'"tembikai" หมายถึงอะไร?', options:["มะละกอ","แตงโม","มะม่วง","ส้ม"], correct:1 },
+  { q:'ข้อใดหมายถึง "ทุเรียน"', options:["pisang","durian","mangga","oren"], correct:1 },
+  { q:'"oren" หมายถึงผลไม้อะไร?', options:["ส้ม","องุ่น","กล้วย","มะละกอ"], correct:0 },
+  { q:'ข้อใดหมายถึง "องุ่น"', options:["epal","anggur","betik","durian"], correct:1 },
+  { q:'"betik" หมายถึงอะไร?', options:["มะละกอ","แตงโม","แอปเปิล","มะม่วง"], correct:0 },
+  { q:'คำศัพท์ข้อใดเป็นชื่อผลไม้ทั้งหมด', options:["mangga, pisang, oren","buku, meja, kerusi","makan, minum, tidur","sekolah, guru, murid"], correct:0 },
+  { q:'ครูชี้ไปที่กล้วยแล้วถามว่า "Apakah buah ini?" ควรตอบว่าอะไร?', options:["Ini epal.","Ini oren.","Ini pisang.","Ini mangga."], correct:2 }
+];
+
+const TIME_LIMIT = 15000; // ms
+const LETTERS = ["ก","ข","ค","ง"];
+const CLASSES = ["a","b","c","d"];
+const SHAPES = ["▲","◆","●","■"];
+
+let qIndex = 0;
+let score = 0;
+let lives = 3;
+let streak = 0;
+let bestStreak = 0;
+let correctCount = 0;
+let timerStart = 0;
+let timerHandle = null;
+let answered = false;
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startGame(){
+  qIndex = 0; score = 0; lives = 3; streak = 0; bestStreak = 0; correctCount = 0;
+  updateHUD();
+  showScreen('screen-game');
+  loadQuestion();
+}
+
+function updateHUD(){
+  document.getElementById('qcount').textContent = Math.min(qIndex+1,10);
+  document.getElementById('hearts').textContent = '❤️'.repeat(lives) + '🖤'.repeat(3-lives);
+  document.getElementById('scoretotal').textContent = score;
+  if(streak >= 2){
+    document.getElementById('streakbox').style.display = 'flex';
+    document.getElementById('streakn').textContent = streak;
+  } else {
+    document.getElementById('streakbox').style.display = 'none';
+  }
+}
+
+function loadQuestion(){
+  answered = false;
+  const d = data[qIndex];
+  document.getElementById('qnum-label').textContent = `คำถามที่ ${qIndex+1}`;
+  document.getElementById('qtext').textContent = d.q;
+  document.getElementById('feedbackpop').textContent = '';
+  document.getElementById('feedbackpop').className = 'feedback-pop';
+  document.getElementById('feedbacksub').textContent = '';
+
+  const answersEl = document.getElementById('answers');
+  answersEl.innerHTML = '';
+  d.options.forEach((opt, i)=>{
+    const btn = document.createElement('button');
+    btn.className = `ans ${CLASSES[i]}`;
+    btn.innerHTML = `<span class="shape">${SHAPES[i]}</span><span>${opt}</span>`;
+    btn.addEventListener('click', ()=> selectAnswer(i));
+    answersEl.appendChild(btn);
+  });
+
+  updateHUD();
+  startTimer();
+}
+
+function startTimer(){
+  clearInterval(timerHandle);
+  timerStart = Date.now();
+  const fill = document.getElementById('timerfill');
+  fill.style.width = '100%';
+  fill.classList.remove('danger');
+  timerHandle = setInterval(()=>{
+    const elapsed = Date.now() - timerStart;
+    const pct = Math.max(0, 100 - (elapsed / TIME_LIMIT) * 100);
+    fill.style.width = pct + '%';
+    if(pct < 25) fill.classList.add('danger');
+    if(elapsed >= TIME_LIMIT){
+      clearInterval(timerHandle);
+      if(!answered) timeUp();
+    }
+  }, 60);
+}
+
+function timeUp(){
+  answered = true;
+  const d = data[qIndex];
+  const btns = document.querySelectorAll('.ans');
+  btns.forEach(b=>b.classList.add('disabled'));
+  btns[d.correct].classList.add('right-flash');
+  streak = 0;
+  document.getElementById('feedbackpop').textContent = '⏰ หมดเวลา!';
+  document.getElementById('feedbackpop').className = 'feedback-pop bad';
+  document.getElementById('feedbacksub').textContent = `คำตอบที่ถูกคือ "${d.options[d.correct]}"`;
+  loseLife();
+  setTimeout(nextQuestion, 1400);
+}
+
+function selectAnswer(i){
+  if(answered) return;
+  answered = true;
+  clearInterval(timerHandle);
+  const elapsed = Date.now() - timerStart;
+  const d = data[qIndex];
+  const btns = document.querySelectorAll('.ans');
+  btns.forEach(b=>b.classList.add('disabled'));
+
+  if(i === d.correct){
+    btns[i].classList.add('right-flash');
+    const speedBonus = Math.max(0, Math.round((1 - elapsed/TIME_LIMIT) * 500));
+    streak++;
+    bestStreak = Math.max(bestStreak, streak);
+    const streakBonus = streak >= 2 ? (streak * 50) : 0;
+    const gained = 500 + speedBonus + streakBonus;
+    score += gained;
+    correctCount++;
+    document.getElementById('feedbackpop').textContent = '🟢 Betul! ถูกต้อง';
+    document.getElementById('feedbackpop').className = 'feedback-pop good';
+    document.getElementById('feedbacksub').textContent = `+${gained} คะแนน${streak>=2 ? ` (สตรีค x${streak} 🔥)` : ''}`;
+  } else {
+    btns[i].classList.add('wrong-flash');
+    btns[d.correct].classList.add('right-flash');
+    streak = 0;
+    document.getElementById('feedbackpop').textContent = '🔴 Belum tepat!';
+    document.getElementById('feedbackpop').className = 'feedback-pop bad';
+    document.getElementById('feedbacksub').textContent = `คำตอบที่ถูกคือ "${d.options[d.correct]}"`;
+    loseLife();
+  }
+  updateHUD();
+  setTimeout(nextQuestion, 1400);
+}
+
+function loseLife(){
+  lives = Math.max(0, lives - 1);
+}
+
+function nextQuestion(){
+  qIndex++;
+  if(qIndex >= data.length){
+    endGame();
+  } else {
+    loadQuestion();
+  }
+}
+
+function endGame(){
+  showScreen('screen-end');
+  document.getElementById('finalscore').textContent = score;
+  document.getElementById('correctcount').textContent = `${correctCount}/10`;
+  document.getElementById('beststreak').textContent = bestStreak;
+  document.getElementById('livesleft').textContent = lives;
+
+  let rank, trophy;
+  if(correctCount === 10){ rank = '👑 ราชาผลไม้ (Raja Buah)'; trophy = '👑'; }
+  else if(correctCount >= 8){ rank = '🥇 นักช้อปตลาดมือโปร'; trophy = '🏆'; }
+  else if(correctCount >= 6){ rank = '🥈 พ่อค้าผลไม้ฝึกหัด'; trophy = '🥈'; }
+  else if(correctCount >= 4){ rank = '🥉 นักท่องตลาดมือใหม่'; trophy = '🥉'; }
+  else { rank = '🌱 เริ่มต้นใหม่ได้! Cuba lagi'; trophy = '🌱'; }
+
+  document.getElementById('rank').textContent = rank;
+  document.getElementById('trophy').textContent = trophy;
+}
+</script>
+</body>
+</html>
